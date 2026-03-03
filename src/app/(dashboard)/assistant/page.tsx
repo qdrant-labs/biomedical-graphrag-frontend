@@ -118,12 +118,19 @@ export default function AssistantPage() {
         trace: [],
       };
 
+      // Buffer for incomplete SSE lines split across chunks
+      let lineBuffer = "";
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n");
+        const chunk = decoder.decode(value, { stream: true });
+        // Prepend any leftover from the previous chunk
+        const text = lineBuffer + chunk;
+        const lines = text.split("\n");
+        // The last element may be incomplete; save it for next iteration
+        lineBuffer = lines.pop() ?? "";
 
         for (const line of lines) {
           if (line.startsWith("data: ")) {
