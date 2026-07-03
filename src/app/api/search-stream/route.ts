@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
-const GRAPHRAG_API_URL = process.env.GRAPHRAG_API_URL || "https://biomedical-graphrag-9qqm.onrender.com";
+// Long GraphRAG queries can take tens of seconds; 300s is the Vercel Hobby Fluid-compute max.
+export const maxDuration = 300;
 
 interface SearchRequest {
   query: string;
@@ -9,6 +10,14 @@ interface SearchRequest {
 }
 
 export async function POST(request: NextRequest) {
+  const GRAPHRAG_API_URL = process.env.GRAPHRAG_API_URL;
+  if (!GRAPHRAG_API_URL) {
+    return new Response(
+      JSON.stringify({ error: "GRAPHRAG_API_URL is not configured" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
   const body: SearchRequest = await request.json();
   const { query, limit = 5, mode = "graphrag" } = body;
 
