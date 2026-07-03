@@ -1,16 +1,26 @@
 import { NextRequest } from "next/server";
 
-const GRAPHRAG_API_URL = process.env.GRAPHRAG_API_URL || "https://biomedical-graphrag-9qqm.onrender.com";
+// Long GraphRAG queries can take tens of seconds; 300s is the Vercel Hobby Fluid-compute max.
+export const maxDuration = 300;
 
 interface SearchRequest {
   query: string;
   limit?: number;
   mode?: string;
+  openaiApiKey?: string;
 }
 
 export async function POST(request: NextRequest) {
+  const GRAPHRAG_API_URL = process.env.GRAPHRAG_API_URL;
+  if (!GRAPHRAG_API_URL) {
+    return new Response(
+      JSON.stringify({ error: "GRAPHRAG_API_URL is not configured" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
   const body: SearchRequest = await request.json();
-  const { query, limit = 5, mode = "graphrag" } = body;
+  const { query, limit = 5, mode = "graphrag", openaiApiKey } = body;
 
   const encoder = new TextEncoder();
 
@@ -41,7 +51,7 @@ export async function POST(request: NextRequest) {
         const response = await fetch(`${GRAPHRAG_API_URL}/api/graphrag-query`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query, limit, mode }),
+          body: JSON.stringify({ query, limit, mode, openai_api_key: openaiApiKey }),
           signal: AbortSignal.timeout(120_000),
         });
 
@@ -50,7 +60,9 @@ export async function POST(request: NextRequest) {
         timers.forEach(clearTimeout);
 
         if (!response.ok) {
-          send({ type: "error", message: "Search failed" });
+          // 401 = the caller's OpenAI key was rejected; signal the client to reopen the key gate.
+          const code = response.status === 401 ? "openai_key_rejected" : undefined;
+          send({ type: "error", code, message: code ? "OpenAI key rejected" : "Search failed" });
           controller.close();
           return;
         }
