@@ -322,7 +322,7 @@ export default function AssistantPage() {
               {message.role === "assistant" && message.metadata && (
                 <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--stroke-1)] pt-3">
                   <Chip variant="teal">
-                    {(message.metadata.trace?.length ?? 0) - (message.metadata.trace?.at(-1)?.name?.toLowerCase().includes("summarize") ? 1 : 0)} tools executed
+                    {message.metadata.trace?.length ?? 0} tools executed
                   </Chip>
                   <Chip variant="default">
                     Vector Search Results: {message.metadata.results?.length || 0}
