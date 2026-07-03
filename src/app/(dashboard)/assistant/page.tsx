@@ -10,6 +10,7 @@ import { DetailedTracePanel } from "@/components/ui/detailed-trace-panel";
 import Image from "next/image";
 import { ThinkingIndicator } from "@/components/ui/thinking-indicator";
 import { FormattedResponse } from "@/components/ui/formatted-response";
+import { ApiKeyGate } from "@/components/api-key-gate";
 import { useAppStore } from "@/store/app-store";
 import { cn } from "@/lib/utils";
 
@@ -54,6 +55,8 @@ export default function AssistantPage() {
     setActiveArtifactTab,
     topK,
     setTopK,
+    openaiKey,
+    setOpenaiKey,
   } = useAppStore();
 
   const [messages, setMessages] = React.useState<Message[]>([]);
@@ -96,6 +99,7 @@ export default function AssistantPage() {
           query,
           limit: topK,
           mode: "graphrag",
+          openaiApiKey: openaiKey,
         }),
       });
 
@@ -215,9 +219,13 @@ export default function AssistantPage() {
                   break;
 
                 case "error":
+                  if (data.code === "openai_key_rejected") {
+                    setOpenaiKey(""); // clears sessionStorage + reopens the key gate
+                    return;
+                  }
                   throw new Error(data.message);
               }
-            } catch (parseError) {
+            } catch {
               // Skip malformed JSON
             }
           }
@@ -254,6 +262,7 @@ export default function AssistantPage() {
 
   return (
     <div className="flex flex-col lg:flex-row h-[calc(100vh-56px-32px-56px)] md:h-[calc(100vh-56px-48px-56px)] gap-4">
+      <ApiKeyGate />
       {/* Chat Pane */}
       <div className="flex flex-1 flex-col min-w-0">
         {/* Header */}
