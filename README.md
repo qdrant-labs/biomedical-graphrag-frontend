@@ -4,12 +4,9 @@ Next.js 16 dashboard for the Biomedical GraphRAG system.
 
 ## Prerequisites
 
-- Node.js 18+
+- Node.js 20+
 - pnpm (`npm install -g pnpm`)
-- Running backend services:
-  - Qdrant (vector database)
-  - Neo4j (graph database)
-  - GraphRAG API server (`make run-api` from project root)
+- A running GraphRAG API backend reachable at `GRAPHRAG_API_URL` (`make run-api` from the backend repo)
 
 ## Setup
 
@@ -23,12 +20,8 @@ pnpm install
 cp .env.example .env.local
 ```
 
-3. Edit `.env.local` with your credentials:
+3. Edit `.env.local`:
 ```
-QDRANT_URL=https://your-cluster.qdrant.io
-QDRANT_API_KEY=your-qdrant-api-key
-QDRANT_COLLECTION_NAME=biomedical_papers
-OPENAI_API_KEY=your-openai-api-key
 GRAPHRAG_API_URL=http://localhost:8765
 ```
 
@@ -53,7 +46,6 @@ make run-frontend
 
 ## Features
 
-- **Collections**: Browse Qdrant vector collections
-- **Graph**: View Neo4j graph statistics
-- **Console**: Run GraphRAG searches
-- **Assistant**: Code examples and API documentation
+- Ask biomedical questions, get answers grounded in GraphRAG (Qdrant hybrid search + Neo4j graph enrichment)
+- Streamed responses with a results panel (retrieved papers) and an execution trace
+- Users provide their own OpenAI key, entered on load and kept only in the browser session

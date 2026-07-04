@@ -365,7 +365,7 @@ export default function AssistantPage() {
                       handleSend();
                     }
                   }}
-                  placeholder="Ask about genes, diseases..."
+                  placeholder="Who are the key research groups working on CRISPR for sickle cell disease?"
                   className="flex-1 min-w-0 bg-transparent text-sm md:text-base text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none"
                 />
                 <Button
